@@ -1,0 +1,2 @@
+<configure xmlns="urn:nokia.com:sros:ns:yang:sr:conf"><system><security/></system></configure>
+<state xmlns="urn:nokia.com:sros:ns:yang:sr:state"><system><security/></system></state>
