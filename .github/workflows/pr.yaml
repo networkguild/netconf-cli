@@ -26,6 +26,7 @@ jobs:
 
       - name: Build all
         run: |
+          make ensure
           make build-all
 
       - name: Notify failure
