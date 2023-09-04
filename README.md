@@ -1,14 +1,15 @@
 # netconf-go
 
-![Release](https://github.devcloud.elisa.fi/NetOps/netconf-go/workflows/Release/badge.svg)
-![Master](https://github.devcloud.elisa.fi/NetOps/netconf-go/workflows/Master/badge.svg)
+[![PR](https://github.devcloud.elisa.fi/NetOps/netconf-go/workflows/Pull%20Request/badge.svg)](https://github.devcloud.elisa.fi/NetOps/netconf-go/actions/workflows/pr.yaml)
+[![Master](https://github.devcloud.elisa.fi/NetOps/netconf-go/workflows/Master/badge.svg)](https://github.devcloud.elisa.fi/NetOps/netconf-go/actions/workflows/master.yaml)
+[![Release](https://github.devcloud.elisa.fi/NetOps/netconf-go/workflows/Release/badge.svg)](https://github.devcloud.elisa.fi/NetOps/netconf-go/actions/workflows/release.yaml)
 
 netconf-go is cli tool to execute netconf operations to network devices.
 
 ## Installation
 
 - Download binary from latest release
-- Copy binary to /usr/local/bin/netconf
+- Copy binary to /usr/local/bin/netconf (or any other location in $PATH)
 - Enjoy
 
 ## Usage:
@@ -58,7 +59,7 @@ Optional file suffix is used with get, get-config and notification commands.
 See [example](examples/hosts.ini)
 
 ### Filters file
-Flag: `--filters, -f`
+Flag: `--filter, -f`
 
 Used with `get`, `get-config` commands. Not available with others.
 
@@ -67,7 +68,8 @@ Currently, filter/subtree per line is supported. There can be any amount of line
 See [example](examples/filters.xml)
 
 ### Commands
-All commands below assumes that you have `NETCONF_PASSWORD` and `NETCONF_USERNAME` environment variables set. Or else using defaults.
+All commands below assumes that you have `NETCONF_PASSWORD` and `NETCONF_USERNAME` environment variables set, or else using defaults.
+Global flags are available for all commands, see above or `netconf --help`.
 
 `Use "netconf [command] --help" for more information about a command` is best resource for examples.
 
@@ -77,8 +79,10 @@ Usage:
   netconf get-config [flags]
 
 Flags:
-      --save            save config to file, file name is the ip + get
-  -s, --source string   datastore, running|candidate|startup (default "running")
+  -f, --filter string          filter option, stdin or file containing filters
+      --save                   save output to file, default name is used, if no suffix provided
+  -s, --source string          running|candidate|startup (default "running")
+  -d, --with-defaults string   with-defaults option, report-all|report-all-tagged|trim|explicit
 ```
 
 #### Run get:
@@ -87,9 +91,9 @@ Usage:
   netconf get [flags]
 
 Flags:
-  -d, --defaults string   with-defaults option, report-all|report-all-tagged|trim|explicit
-  -f, --filters string    stdin or file containing filters
-      --save              save config to file, file name is the filter name + day
+  -f, --filter string          filter option, stdin or file containing filters
+      --save                   save output to file, default name is used, if no suffix provided
+  -d, --with-defaults string   with-defaults option, report-all|report-all-tagged|trim|explicit
 ```
 
 #### Run edit-config:
@@ -110,7 +114,6 @@ Usage:
   netconf copy-config [flags]
 
 Flags:
-  -h, --help                help for copy-config
   -s, --source string       source configuration datastore
   -S, --source-url string   source configuration url
   -t, --target string       target configuration datastore to save config
@@ -133,7 +136,8 @@ Usage:
   netconf notification [flags]
 
 Flags:
-      --get             get available notification streams
-      --save            save notifications to file, default name is used, if no suffix provided
-  -s, --stream string   stream to subscribe (default "NETCONF")
+  -d, --duration duration   duration for subscription, eg. 2h30m45s
+      --get                 get available notification streams
+      --save                save notifications to file, default name is used, if no suffix provided
+  -s, --stream string       stream to subscribe (default "NETCONF")
 ```
