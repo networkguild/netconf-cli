@@ -1,0 +1,60 @@
+name: Master
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  go:
+    runs-on:
+      - self-hosted
+      - kaas
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.21.x
+
+      - name: Build all
+        run: |
+          make build-all
+
+      - name: Notify failure
+        if: failure()
+        env:
+          MATTERMOST_WEBHOOK_URL: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
+          MATTERMOST_TEXT: "${{ github.repository }} [${{ github.event.ref }}](${{ github.event.repository.html_url }}/tree/${{ github.event.ref }}) build failed.  Please check [here](${{ github.event.pull_request.html_url }}/checks)."
+        run: |
+          send-to-mattermost
+
+  release-drafter:
+    runs-on: self-hosted
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set GHE_HOST
+        run: |
+          echo "GHE_HOST=${GITHUB_SERVER_URL##https:\/\/}" >> $GITHUB_ENV
+
+      - name: Release drafter
+        uses: elisa-actions/release-drafter@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          disable-releaser: false
+          disable-autolabeler: true
+
+      - name: Notify failure
+        if: failure()
+        env:
+          MATTERMOST_WEBHOOK_URL: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
+          MATTERMOST_TEXT: "${{ github.repository }} [${{ github.event.ref }}](${{ github.event.repository.html_url }}/tree/${{ github.event.ref }}) release failed."
+        run: |
+          send-to-mattermost

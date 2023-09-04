@@ -1,0 +1,18 @@
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+    labels: ["dependencies", "github_actions", "patch", "skip-release"]
+    reviewers:
+      - "EDN/dependabot-reviewers"
+  - package-ecosystem: "gomod"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+    labels: ["dependencies", "go", "patch", "skip-release"]
+    reviewers:
+      - "EDN/dependabot-reviewers"

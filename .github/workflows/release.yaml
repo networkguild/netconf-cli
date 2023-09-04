@@ -1,0 +1,77 @@
+name: Release
+
+on:
+  release:
+    types:
+      - published
+
+jobs:
+  release:
+    runs-on:
+      - self-hosted
+      - kaas
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.21.x
+
+      - name: Build all
+        run: |
+          make build-all
+
+      - name: Upload binaries
+        uses: elisa-actions/action-gh-release@v1
+        with:
+          files: bin/*
+
+      - name: Notify failure
+        if: failure()
+        env:
+          MATTERMOST_WEBHOOK_URL: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
+          MATTERMOST_TEXT: "${{ github.repository }} [${{ github.event.ref }}](${{ github.event.repository.html_url }}/tree/${{ github.event.ref }}) release failed."
+        run: |
+          send-to-mattermost
+
+  publish:
+    runs-on: self-hosted
+    timeout-minutes: 5
+    needs: release
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Get release info
+        id: get_release_info
+        uses: octokit/request-action@v2.x
+        with:
+          route: GET /repos/${{ github.event.repository.full_name }}/releases/tags/${{ github.event.release.tag_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish release
+        env:
+          MATTERMOST_WEBHOOK_URL: ${{ secrets.MATTERMOST_RELEASE_WEBHOOK_URL }}
+          MATTERMOST_REPO_URL: ${{ github.event.repository.html_url }}
+          MATTERMOST_COLOR: info
+          MATTERMOST_TEXT: |-
+            ##### New release ${{ github.event.release.tag_name }} published in [${{ github.event.repository.full_name }}](${{ github.event.release.html_url }})
+            ${{ fromJson(steps.get_release_info.outputs.data).body }}
+        run: |
+          send-to-mattermost
+
+      - name: Notify failure
+        if: failure()
+        env:
+          MATTERMOST_WEBHOOK_URL: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
+          MATTERMOST_TEXT: "${{ github.repository }} [${{ github.event.ref }}](${{ github.event.repository.html_url }}/tree/${{ github.event.ref }}) release failed."
+        run: |
+          send-to-mattermost
