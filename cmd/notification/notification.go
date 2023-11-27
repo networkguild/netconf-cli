@@ -57,10 +57,8 @@ netconf notification --host 192.168.1.1 --stream NETCONF --duration 12m30s`,
 			if opts.duration != 0 {
 				// monitor when subscription ends, as server does not close session
 				go func() {
-					select {
-					case <-time.After(opts.duration + 5*time.Second):
-						sigs <- syscall.SIGTERM
-					}
+					time.Sleep(opts.duration + 5*time.Second)
+					sigs <- syscall.SIGTERM
 				}()
 			}
 
