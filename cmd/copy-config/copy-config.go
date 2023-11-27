@@ -12,12 +12,12 @@ import (
 	"github.devcloud.elisa.fi/netops/netconf-go/pkg/parallel"
 )
 
-var (
+var opts struct {
 	sourceFlag string
 	targetFlag string
 	sourceUrl  string
 	targetUrl  string
-)
+}
 
 func NewCopyConfigCommand() *cobra.Command {
 	copyConfigCmd := &cobra.Command{
@@ -38,15 +38,15 @@ netconf copy-config --host 192.168.1.1 --file rpc <- directory used here (probab
 			}
 
 			if err := parallel.RunParallel(cfg.Devices, runCopyConfig); err != nil {
-				log.Fatalf("Failed to run netconf, error: %v", err)
+				log.Fatalf("Failed to execute copy-config")
 			}
 		},
 	}
 	flags := copyConfigCmd.Flags()
-	flags.StringVarP(&sourceFlag, "source", "s", "", "source configuration datastore")
-	flags.StringVarP(&targetFlag, "target", "t", "", "target configuration datastore to save config")
-	flags.StringVarP(&sourceUrl, "source-url", "S", "", "source configuration url")
-	flags.StringVarP(&targetUrl, "target-url", "T", "", "target configuration url to save config")
+	flags.StringVarP(&opts.sourceFlag, "source", "s", "", "source configuration datastore")
+	flags.StringVarP(&opts.targetFlag, "target", "t", "", "target configuration datastore to save config")
+	flags.StringVarP(&opts.sourceUrl, "source-url", "S", "", "source configuration url")
+	flags.StringVarP(&opts.targetUrl, "target-url", "T", "", "target configuration url to save config")
 	copyConfigCmd.MarkFlagsMutuallyExclusive("source", "source-url")
 	copyConfigCmd.MarkFlagsMutuallyExclusive("target", "target-url")
 
@@ -60,28 +60,26 @@ func runCopyConfig(device *config.Device, session *netconf.Session) error {
 	start := time.Now()
 	var source any
 	switch {
-	case sourceFlag != "":
-		source = netconf.Datastore(sourceFlag)
-	case sourceUrl != "":
-		source = netconf.URL(sourceUrl)
+	case opts.sourceFlag != "":
+		source = netconf.Datastore(opts.sourceFlag)
+	case opts.sourceUrl != "":
+		source = netconf.URL(opts.sourceUrl)
 	default:
 		return fmt.Errorf("no source specified")
 	}
 
 	var target any
 	switch {
-	case targetFlag != "":
-		target = netconf.Datastore(targetFlag)
-	case targetUrl != "":
-		target = netconf.URL(targetUrl)
+	case opts.targetFlag != "":
+		target = netconf.Datastore(opts.targetFlag)
+	case opts.targetUrl != "":
+		target = netconf.URL(opts.targetUrl)
 	default:
 		return fmt.Errorf("no target specified")
 	}
 
-	if reply, err := session.CopyConfig(ctx, source, target); err != nil {
+	if err := session.CopyConfig(ctx, source, target); err != nil {
 		return err
-	} else {
-		device.Log.Debugf("Copy-config reply:\n%s", reply.Raw())
 	}
 
 	device.Log.Infof("Executed copy-config request, took %.3f seconds", time.Since(start).Seconds())

@@ -13,13 +13,14 @@ import (
 	"github.devcloud.elisa.fi/netops/netconf-go/pkg/utils"
 )
 
-var (
+var opts struct {
 	defaltOp string
 	testOp   string
 	file     string
 	copy     bool
-	files    [][]byte
-)
+}
+
+var files [][]byte
 
 func NewEditConfigCommand() *cobra.Command {
 	editConfigCmd := &cobra.Command{
@@ -39,22 +40,22 @@ netconf edit-config --host 192.168.1.1 --file rpc <- directory used here (probab
 				log.Fatalf("Failed to init config, error: %v", err)
 			}
 
-			f, err := utils.ReadFilesFromUser(file)
+			f, err := utils.ReadFilesFromUser(opts.file)
 			if err != nil {
 				log.Fatalf("Failed to read rpc's, error: %v", err)
 			}
 			files = f
 
 			if err := parallel.RunParallel(cfg.Devices, runEditConfig); err != nil {
-				log.Fatalf("Failed to run netconf, error: %v", err)
+				log.Fatalf("Failed to execute edit-config")
 			}
 		},
 	}
 	flags := editConfigCmd.Flags()
-	flags.StringVarP(&file, "file", "f", "", "stdin, file or directory containing xml files")
-	flags.StringVarP(&defaltOp, "default-operation", "d", "merge", "default-operation, none|merge|remove")
-	flags.StringVarP(&testOp, "test-option", "t", "", "test-option, test-then-set|set|test-only")
-	flags.BoolVarP(&copy, "copy", "c", false, "run copy-config after rpc's")
+	flags.StringVarP(&opts.file, "file", "f", "", "stdin, file or directory containing xml files")
+	flags.StringVarP(&opts.defaltOp, "default-operation", "d", "merge", "default-operation, none|merge|remove")
+	flags.StringVarP(&opts.testOp, "test-option", "t", "", "test-option, test-then-set|set|test-only")
+	flags.BoolVarP(&opts.copy, "copy", "c", false, "run copy-config after rpc's")
 
 	return editConfigCmd
 }
@@ -79,50 +80,40 @@ func runEditConfig(device *config.Device, session *netconf.Session) error {
 	}
 	start := time.Now()
 	for _, data := range files {
-		if reply, err := session.Lock(ctx, datastore); err != nil {
+		if err := session.Lock(ctx, datastore); err != nil {
 			return err
-		} else {
-			device.Log.Debugf("Lock reply:\n%s", reply.Raw())
 		}
 
-		if reply, err := session.EditConfig(ctx,
+		if err := session.EditConfig(ctx,
 			datastore,
 			data,
 			errorOpt,
-			netconf.WithDefaultMergeStrategy(netconf.MergeStrategy(defaltOp)),
-			netconf.WithTestStrategy(netconf.TestStrategy(testOp)),
+			netconf.WithDefaultMergeStrategy(netconf.MergeStrategy(opts.defaltOp)),
+			netconf.WithTestStrategy(netconf.TestStrategy(opts.testOp)),
 		); err != nil {
 			device.Log.Errorf("Failed to edit candidate config: %v", err)
 			return err
-		} else {
-			device.Log.Debugf("Edit-config reply:\n%s", reply.Raw())
 		}
 
 		if validate {
-			reply, err := session.Validate(ctx, datastore)
-			if err != nil {
+			if err := session.Validate(ctx, datastore); err != nil {
 				return err
 			}
-			device.Log.Debugf("Validate reply:\n%s", reply.Raw())
 		}
 
-		if reply, err := session.Commit(ctx); err != nil {
+		if err := session.Commit(ctx); err != nil {
 			return err
-		} else {
-			device.Log.Debugf("Commit reply:\n%s", reply.Raw())
 		}
 
-		if reply, err := session.Unlock(ctx, datastore); err != nil {
+		if err := session.Unlock(ctx, datastore); err != nil {
 			return err
-		} else {
-			device.Log.Debugf("Unlock reply:\n%s", reply.Raw())
 		}
 	}
 	device.Log.Infof("Executed %d edit-config requests, took %.3f seconds", len(files), time.Since(start).Seconds())
 
 	start = time.Now()
-	if copy && startup && netconf.TestStrategy(testOp) != netconf.TestOnly {
-		if _, err := session.CopyConfig(ctx, netconf.Running, netconf.Startup); err != nil {
+	if opts.copy && startup && netconf.TestStrategy(opts.testOp) != netconf.TestOnly {
+		if err := session.CopyConfig(ctx, netconf.Running, netconf.Startup); err != nil {
 			return err
 		}
 		device.Log.Infof("Executed copy-config request, took %.3f seconds", time.Since(start).Seconds())

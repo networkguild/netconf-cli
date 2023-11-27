@@ -38,7 +38,7 @@ func ParseConfig(ctx context.Context) (*Config, error) {
 			Password: password,
 			Port:     port,
 			Ctx:      ctx,
-			Log:      copyDefaultLogger(ip),
+			Log:      log.WithPrefix(ip),
 		})
 	} else {
 		hosts, err := utils.ReadInventoryFromUser(viper.GetString("inventory"))
@@ -57,7 +57,7 @@ func ParseConfig(ctx context.Context) (*Config, error) {
 				Port:     port,
 				Suffix:   host.Suffix,
 				Ctx:      ctx,
-				Log:      copyDefaultLogger(host.IP),
+				Log:      log.WithPrefix(host.IP),
 			})
 		}
 	}
@@ -65,10 +65,4 @@ func ParseConfig(ctx context.Context) (*Config, error) {
 	return &Config{
 		Devices: devices,
 	}, nil
-}
-
-func copyDefaultLogger(ip string) *log.Logger {
-	logger := log.With()
-	logger.SetPrefix(ip)
-	return logger
 }

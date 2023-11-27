@@ -14,12 +14,11 @@ import (
 	"github.devcloud.elisa.fi/netops/netconf-go/pkg/utils"
 )
 
-var (
-	filterFile string
-	defaults   string
-	persist    bool
-	filters    []byte
-)
+var opts struct {
+	filters  string
+	defaults string
+	persist  bool
+}
 
 func NewGetCommand() *cobra.Command {
 	getCmd := &cobra.Command{
@@ -46,21 +45,22 @@ One subtree/filter per line, no maximum amount of filters. All filters are fetch
 				log.Fatalf("Failed to init config, error: %v", err)
 			}
 
-			userFilters, err := utils.ReadFiltersFromUser(filterFile)
-			if err != nil {
-				log.Fatalf("Failed to read filters, error: %v", err)
+			if opts.filters != "" {
+				opts.filters, err = utils.ReadFiltersFromUser(opts.filters)
+				if err != nil {
+					log.Fatalf("Failed to read filters, error: %v", err)
+				}
 			}
 
-			filters = userFilters
 			if err := parallel.RunParallel(cfg.Devices, runGet); err != nil {
-				log.Fatalf("Failed to run netconf, error: %v", err)
+				log.Fatalf("Failed to execute get")
 			}
 		},
 	}
 	flags := getCmd.Flags()
-	flags.StringVarP(&filterFile, "filter", "f", "", "filter option, stdin or file containing filters")
-	flags.StringVarP(&defaults, "with-defaults", "d", "", "with-defaults option, report-all|report-all-tagged|trim|explicit")
-	flags.BoolVar(&persist, "save", false, "save output to file, default name is used, if no suffix provided")
+	flags.StringVarP(&opts.filters, "filter", "f", "", "filter option, stdin or file containing filters")
+	flags.StringVarP(&opts.defaults, "with-defaults", "d", "", "with-defaults option, report-all|report-all-tagged|trim|explicit")
+	flags.BoolVar(&opts.persist, "save", false, "save output to file, default name is used, if no suffix provided")
 
 	return getCmd
 }
@@ -71,38 +71,34 @@ func runGet(device *config.Device, session *netconf.Session) error {
 
 	start := time.Now()
 	reply, err := session.Get(ctx,
-		netconf.WithDefaultMode(netconf.DefaultsMode(defaults)),
-		netconf.WithFilter(netconf.Filter(filters)),
+		netconf.WithDefaultMode(netconf.DefaultsMode(opts.defaults)),
+		netconf.WithSubtreeFilter(opts.filters),
 	)
 	if err != nil {
 		device.Log.Errorf("Failed to get subtree: %v", err)
 		return err
 	}
 
-	if persist {
+	replyString := utils.FormatXML(reply.DataString())
+	if opts.persist {
 		var name string
 		if device.Suffix != "" {
 			name = fmt.Sprintf("%s-%s", device.IP, device.Suffix)
 		} else {
-			name = fmt.Sprintf("%session-get-filters.xml", device.IP)
+			name = fmt.Sprintf("%s-get-filters.xml", device.IP)
 		}
 
 		file, err := os.Create(name)
 		if err != nil {
-			device.Log.Errorf("Failed to create file: %v, printing reply", err)
-			device.Log.Infof("Get reply:\n%s", reply.Raw())
+			device.Log.Errorf("Failed to create file: %v", err)
 		} else {
 			defer file.Close()
 
-			_, err = file.Write(reply.Raw())
-			if err != nil {
-				return err
-			}
-
+			file.WriteString(replyString)
 			device.Log.Infof("Saved get reply to file %s", name)
 		}
 	} else {
-		device.Log.Infof("Get reply:\n%s", reply.Raw())
+		device.Log.Infof("Get reply:\n%s", replyString)
 
 	}
 	device.Log.Infof("Executed get filter request, took %.3f seconds", time.Since(start).Seconds())

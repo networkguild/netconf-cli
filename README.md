@@ -25,6 +25,10 @@ All commands support parallel run with multiple devices, --inventory, -i file is
 
 Global flags can be configured via environment variables (prefix NETCONF) or via command-line flags
 
+If you want trace all incoming and outgoing RPC's, set NETCONF_DEBUG_CAPTURE_DIR environment variable or use --trace flag,
+this will save all incoming RPC's to file <currect-time>.in and outgoing RPC's to <currect-time>.out.
+RPC's are saved in raw format, including chunked markers.
+
 Usage:
   netconf [command]
 
@@ -47,6 +51,7 @@ Flags:
       --logfile string     Enables logging to specific file, disables stdout logging
   -p, --password string    SSH password or env NETCONF_PASSWORD (default "admin")
   -P, --port int           Netconf port or env NETCONF_PORT (default 830)
+      --trace              Enables RPC tracing, saves all incoming and outgoing RPC's to file. Default dir $HOME/.netconf
   -u, --username string    SSH username or env NETCONF_USERNAME (default "admin")
 
 Use "netconf [command] --help" for more information about a command.

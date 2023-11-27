@@ -2,6 +2,7 @@ package notification
 
 import (
 	"context"
+	"encoding/xml"
 	"fmt"
 	"os"
 	"os/signal"
@@ -10,20 +11,20 @@ import (
 	"time"
 
 	"github.com/charmbracelet/log"
-	"github.com/go-xmlfmt/xmlfmt"
 	"github.com/networkguild/netconf"
 	ncssh "github.com/networkguild/netconf/transport/ssh"
 	"github.com/spf13/cobra"
 	"github.devcloud.elisa.fi/netops/netconf-go/pkg/config"
 	"github.devcloud.elisa.fi/netops/netconf-go/pkg/ssh"
+	"github.devcloud.elisa.fi/netops/netconf-go/pkg/utils"
 )
 
-var (
+var opts struct {
 	getStreams bool
 	persist    bool
 	stream     string
 	duration   time.Duration
-)
+}
 
 func NewNotificationCommand() *cobra.Command {
 	notificationCmd := &cobra.Command{
@@ -53,13 +54,11 @@ netconf notification --host 192.168.1.1 --stream NETCONF --duration 12m30s`,
 				cancel()
 			}()
 
-			if duration != 0 {
+			if opts.duration != 0 {
 				// monitor when subscription ends, as server does not close session
 				go func() {
-					select {
-					case <-time.After(duration + 5*time.Second):
-						sigs <- syscall.SIGTERM
-					}
+					time.Sleep(opts.duration + 5*time.Second)
+					sigs <- syscall.SIGTERM
 				}()
 			}
 
@@ -72,10 +71,10 @@ netconf notification --host 192.168.1.1 --stream NETCONF --duration 12m30s`,
 		},
 	}
 	flags := notificationCmd.Flags()
-	flags.BoolVar(&getStreams, "get", false, "get available notification streams")
-	flags.StringVarP(&stream, "stream", "s", "NETCONF", "stream to subscribe")
-	flags.DurationVarP(&duration, "duration", "d", 0, "duration for subscription, eg. 2h30m45s")
-	flags.BoolVar(&persist, "save", false, "save notifications to file, default name is used, if no suffix provided")
+	flags.BoolVar(&opts.getStreams, "get", false, "get available notification streams")
+	flags.StringVarP(&opts.stream, "stream", "s", "NETCONF", "stream to subscribe")
+	flags.DurationVarP(&opts.duration, "duration", "d", 0, "duration for subscription, eg. 2h30m45s")
+	flags.BoolVar(&opts.persist, "save", false, "save notifications to file, default name is used, if no suffix provided")
 
 	return notificationCmd
 }
@@ -89,10 +88,17 @@ func runSubscriptions(devices []config.Device) {
 	for _, device := range devices {
 		d := device
 		handler := func(notification netconf.Notification) {
-			xml := xmlfmt.FormatXML(notification.String(), "", "  ")
+			var xmlString string
+			notif, err := xml.Marshal(&notification)
+			if err != nil {
+				xmlString = notification.String()
+			} else {
+				xmlString = string(notif)
+			}
+			xmlString = utils.FormatXML(xmlString)
 			d.Log.Infof("Received notification, timestamp: %s", notification.EventTime)
 
-			if persist {
+			if opts.persist {
 				var fileName string
 				if d.Suffix != "" {
 					fileName = fmt.Sprintf("%s-%s", d.IP, d.Suffix)
@@ -106,9 +112,9 @@ func runSubscriptions(devices []config.Device) {
 				}
 				defer file.Close()
 
-				file.WriteString(xml)
+				file.WriteString(xmlString)
 			} else {
-				d.Log.Infof("Notification:%s", xml)
+				d.Log.Infof("Notification:%s", xmlString)
 			}
 		}
 
@@ -136,9 +142,9 @@ func runSubscriptions(devices []config.Device) {
 			}
 			defer session.Close(d.Ctx)
 
-			if getStreams {
+			if opts.getStreams {
 				get, err := session.Get(d.Ctx,
-					netconf.WithFilter(subscriptionGet),
+					netconf.WithSubtreeFilter(subscriptionGet),
 				)
 				if err != nil {
 					log.Errorf("Failed to get available streams: %v", err)
@@ -146,20 +152,18 @@ func runSubscriptions(devices []config.Device) {
 				d.Log.Infof("Available streams:\n%s", get)
 				d.Log.Infof("Fetched available notifications streams, took %.3f seconds", time.Since(start).Seconds())
 			} else {
-				if duration != 0 {
-					_, err := session.CreateSubscription(d.Ctx,
-						netconf.WithStreamOption(stream),
+				if opts.duration != 0 {
+					if err := session.CreateSubscription(d.Ctx,
+						netconf.WithStreamOption(opts.stream),
 						netconf.WithStartTimeOption(start),
-						netconf.WithStopTimeOption(start.Add(duration)),
-					)
-					if err != nil {
-						d.Log.Errorf("Failed to create subscription with duration: %s, %v", err, duration)
+						netconf.WithStopTimeOption(start.Add(opts.duration)),
+					); err != nil {
+						d.Log.Errorf("Failed to create subscription with duration: %s, %v", err, opts.duration)
 						return
 					}
-					d.Log.Infof("Created subscription with duration: %s, took %.3f seconds", duration, time.Since(start).Seconds())
+					d.Log.Infof("Created subscription with duration: %s, took %.3f seconds", opts.duration, time.Since(start).Seconds())
 				} else {
-					_, err := session.CreateSubscription(d.Ctx, netconf.WithStreamOption(stream))
-					if err != nil {
+					if err := session.CreateSubscription(d.Ctx, netconf.WithStreamOption(opts.stream)); err != nil {
 						d.Log.Errorf("Failed to create subscription: %v", err)
 						return
 					}
@@ -167,7 +171,7 @@ func runSubscriptions(devices []config.Device) {
 				}
 				<-d.Ctx.Done()
 
-				d.Log.Infof("Subscription %s ended, duration %.3f seconds", stream, time.Since(start).Seconds())
+				d.Log.Infof("Subscription %s ended, duration %.3f seconds", opts.stream, time.Since(start).Seconds())
 			}
 		}()
 	}

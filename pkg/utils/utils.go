@@ -16,19 +16,17 @@ type Host struct {
 	Suffix string
 }
 
-func ReadFiltersFromUser(path string) ([]byte, error) {
+func ReadFiltersFromUser(path string) (string, error) {
 	reader, err := resolveReader(path, false)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	var buf bytes.Buffer
-	scanner := bufio.NewScanner(reader)
-	for scanner.Scan() {
-		buf.Write(scanner.Bytes())
-		buf.Write([]byte("\n"))
+	b, err := io.ReadAll(reader)
+	if err != nil {
+		return "", err
 	}
-	return buf.Bytes(), scanner.Err()
+	return string(b), nil
 }
 
 func ReadInventoryFromUser(path string) ([]Host, error) {
