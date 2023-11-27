@@ -22,14 +22,14 @@ build-linux-amd64:
 
 build-darwin-amd64:
 	rm -f bin/$(OPERATOR_NAME)-darwin-amd64
-	GOOS=darwin GOARCH=amd64 GO111MODULE=on CGO_ENABLED=0 go build -mod vendor -ldflags="-s -w" -v -o bin/$(OPERATOR_NAME)-darwin-amd64 main.go
+	GOOS=darwin GOARCH=amd64 GO111MODULE=on CGO_ENABLED=0 go build -mod vendor -ldflags="-s -w" -o bin/$(OPERATOR_NAME)-darwin-amd64 main.go
 
 build-darwin-arm64:
 	rm -f bin/$(OPERATOR_NAME)-darwin-arm64
-	GOOS=darwin GOARCH=arm64 GO111MODULE=on CGO_ENABLED=0 go build -mod vendor -ldflags="-s -w" -v -o bin/$(OPERATOR_NAME)-darwin-arm64 main.go
+	GOOS=darwin GOARCH=arm64 GO111MODULE=on CGO_ENABLED=0 go build -mod vendor -ldflags="-s -w" -o bin/$(OPERATOR_NAME)-darwin-arm64 main.go
 
 build-windows:
-	GOOS=windows GOARCH=amd64 GO111MODULE=on CGO_ENABLED=0 go build -mod vendor -ldflags="-s -w"  -v -o bin/$(OPERATOR_NAME)-windows-amd64.exe main.go
+	GOOS=windows GOARCH=amd64 GO111MODULE=on CGO_ENABLED=0 go build -mod vendor -ldflags="-s -w" -o bin/$(OPERATOR_NAME)-windows-amd64.exe main.go
 
 build-all: build-linux-amd64 build-darwin-amd64 build-darwin-arm64 build-windows
 

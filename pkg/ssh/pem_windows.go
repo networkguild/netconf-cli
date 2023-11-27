@@ -1,4 +1,4 @@
-//go:build linux || darwin
+//go:build windows
 
 package ssh
 
@@ -36,7 +36,7 @@ func parseSSHSigner(file string) (ssh.Signer, error) {
 		var e *ssh.PassphraseMissingError
 		if errors.As(err, &e) {
 			log.Info("Enter password for private key:")
-			password, err := term.ReadPassword(syscall.Stdin)
+			password, err := term.ReadPassword(syscall.STD_INPUT_HANDLE)
 			if err != nil {
 				return nil, err
 			}
