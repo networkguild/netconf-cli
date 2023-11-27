@@ -14,13 +14,12 @@ import (
 	"github.devcloud.elisa.fi/netops/netconf-go/pkg/utils"
 )
 
-var (
-	filterFile string
-	defaults   string
-	persist    bool
-	source     string
-	filters    []byte
-)
+var opts struct {
+	filters  string
+	defaults string
+	persist  bool
+	source   string
+}
 
 func NewGetConfigCommand() *cobra.Command {
 	getCmd := &cobra.Command{
@@ -40,24 +39,23 @@ netconf get-config --host 192.168.1.1 --password pass --username user`,
 				log.Fatalf("Failed to init config, error: %v", err)
 			}
 
-			if filterFile != "" {
-				userFilters, err := utils.ReadFiltersFromUser(filterFile)
+			if opts.filters != "" {
+				opts.filters, err = utils.ReadFiltersFromUser(opts.filters)
 				if err != nil {
-					log.Errorf("Failed to read filters, error: %v", err)
+					log.Fatalf("Failed to read filters, error: %v", err)
 				}
-				filters = userFilters
 			}
 
 			if err := parallel.RunParallel(cfg.Devices, runGetConfig); err != nil {
-				log.Fatalf("Failed to run netconf, error: %v", err)
+				log.Fatalf("Failed to execute get-config")
 			}
 		},
 	}
 	flags := getCmd.Flags()
-	flags.StringVarP(&filterFile, "filter", "f", "", "filter option, stdin or file containing filters")
-	flags.StringVarP(&defaults, "with-defaults", "d", "", "with-defaults option, report-all|report-all-tagged|trim|explicit")
-	flags.BoolVar(&persist, "save", false, "save output to file, default name is used, if no suffix provided")
-	flags.StringVarP(&source, "source", "s", "running", "running|candidate|startup")
+	flags.StringVarP(&opts.filters, "filter", "f", "", "filter option, stdin or file containing filters")
+	flags.StringVarP(&opts.defaults, "with-defaults", "d", "", "with-defaults option, report-all|report-all-tagged|trim|explicit")
+	flags.BoolVar(&opts.persist, "save", false, "save output to file, default name is used, if no suffix provided")
+	flags.StringVarP(&opts.source, "source", "s", "running", "running|candidate|startup")
 
 	return getCmd
 }
@@ -68,15 +66,16 @@ func runGetConfig(device *config.Device, session *netconf.Session) error {
 
 	start := time.Now()
 	reply, err := session.GetConfig(ctx,
-		netconf.Datastore(source),
-		netconf.WithDefaultMode(netconf.DefaultsMode(defaults)),
-		netconf.WithFilter(netconf.Filter(filters)),
+		netconf.Datastore(opts.source),
+		netconf.WithDefaultMode(netconf.DefaultsMode(opts.defaults)),
+		netconf.WithSubtreeFilter(opts.filters),
 	)
 	if err != nil {
-		return fmt.Errorf("failed to get %s config, ip: %s, error: %v", source, device.IP, err)
+		return fmt.Errorf("failed to get %s config, ip: %s, error: %v", opts.source, device.IP, err)
 	}
 
-	if persist {
+	replyString := utils.FormatXML(reply.DataString())
+	if opts.persist {
 		var name string
 		if device.Suffix != "" {
 			name = fmt.Sprintf("%s-%s", device.IP, device.Suffix)
@@ -86,20 +85,15 @@ func runGetConfig(device *config.Device, session *netconf.Session) error {
 
 		file, err := os.Create(name)
 		if err != nil {
-			device.Log.Errorf("Failed to create file: %v, printing reply", err)
-			device.Log.Infof("Get-config reply:\n%s", reply.Raw())
+			device.Log.Errorf("Failed to create file: %v", err)
 		} else {
 			defer file.Close()
 
-			_, err = file.Write(reply.Raw())
-			if err != nil {
-				return err
-			}
-
+			file.WriteString(replyString)
 			device.Log.Infof("Saved get reply to file %s", name)
 		}
 	} else {
-		device.Log.Infof("Get-config reply:\n%s", reply.Raw())
+		device.Log.Infof("Get-config reply:\n%s", replyString)
 	}
 	device.Log.Infof("Executed get-config request, took %.3f seconds", time.Since(start).Seconds())
 	return nil

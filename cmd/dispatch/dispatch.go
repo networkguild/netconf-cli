@@ -13,11 +13,12 @@ import (
 	"github.devcloud.elisa.fi/netops/netconf-go/pkg/utils"
 )
 
-var (
+var opts struct {
 	useLock bool
 	file    string
-	files   [][]byte
-)
+}
+
+var files [][]byte
 
 func NewDispatchCommand() *cobra.Command {
 	dispatchCmd := &cobra.Command{
@@ -34,20 +35,20 @@ netconf dispatch --host 192.168.1.1 --file dispatch.xml`,
 				log.Fatalf("Failed to init config, error: %v", err)
 			}
 
-			f, err := utils.ReadFilesFromUser(file)
+			f, err := utils.ReadFilesFromUser(opts.file)
 			if err != nil {
 				log.Fatalf("Failed to read rpc's, error: %v", err)
 			}
 			files = f
 
 			if err := parallel.RunParallel(cfg.Devices, runDispatch); err != nil {
-				log.Fatalf("Failed to run netconf, error: %v", err)
+				log.Fatalf("Failed to execute dispatch")
 			}
 		},
 	}
 	flags := dispatchCmd.Flags()
-	flags.StringVarP(&file, "file", "f", "", "stdin, file or directory containing xml files, or stdin")
-	flags.BoolVarP(&useLock, "lock", "l", false, "run with datastore lock")
+	flags.StringVarP(&opts.file, "file", "f", "", "stdin, file or directory containing xml files, or stdin")
+	flags.BoolVarP(&opts.useLock, "lock", "l", false, "run with datastore lock")
 
 	return dispatchCmd
 }
@@ -67,29 +68,25 @@ func runDispatch(device *config.Device, session *netconf.Session) error {
 
 	start := time.Now()
 	for _, data := range files {
-		if useLock {
-			if reply, err := session.Lock(ctx, datastore); err != nil {
+		if opts.useLock {
+			if err := session.Lock(ctx, datastore); err != nil {
 				return err
-			} else {
-				device.Log.Debugf("Lock reply:\n%s", reply.Raw())
 			}
 
 			if reply, err := session.Dispatch(ctx, data); err != nil {
 				return err
 			} else {
-				device.Log.Debugf("Dispatch reply:\n%s", reply.Raw())
+				device.Log.Debugf("Dispatch reply:\n%s", reply.Body)
 			}
 
-			if reply, err := session.Unlock(ctx, datastore); err != nil {
+			if err := session.Unlock(ctx, datastore); err != nil {
 				return err
-			} else {
-				device.Log.Debugf("Unlock reply:\n%s", reply.Raw())
 			}
 		} else {
 			if reply, err := session.Dispatch(ctx, data); err != nil {
 				return err
 			} else {
-				device.Log.Debugf("Dispatch reply:\n%s", reply.Raw())
+				device.Log.Debugf("Dispatch reply:\n%s", reply.Body)
 			}
 		}
 	}
