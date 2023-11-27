@@ -1,6 +1,6 @@
 module github.devcloud.elisa.fi/netops/netconf-go
 
-go 1.21.1
+go 1.21
 
 require (
 	github.com/alphadose/haxmap v1.3.0
