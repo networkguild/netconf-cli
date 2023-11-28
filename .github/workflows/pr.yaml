@@ -27,9 +27,17 @@ jobs:
         with:
           go-version-file: go.mod
 
+      - name: Generate ssh key's for test
+        run: |
+          ssh-keygen -q -t rsa -N '' -f pkg/ssh/testdata/id_rsa
+          ssh-keygen -q -t rsa -N '' -t ed25519 -f pkg/ssh/testdata/id_ed25519
+
+      - name: Run tests
+        run: |
+          make test
+
       - name: Build all
         run: |
-          make ensure
           make build-all
 
       - name: Notify failure
