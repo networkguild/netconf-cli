@@ -79,7 +79,7 @@ func runGet(device *config.Device, session *netconf.Session) error {
 		return err
 	}
 
-	replyString := utils.FormatXML(reply.DataString())
+	replyString := utils.FormatXML(reply.String())
 	if opts.persist {
 		var name string
 		if device.Suffix != "" {
