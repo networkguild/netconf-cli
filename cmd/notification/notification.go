@@ -123,7 +123,7 @@ func runSubscriptions(devices []config.Device) {
 			start := time.Now()
 			client, err := ssh.DialSSH(&d, true)
 			if err != nil {
-				log.Errorf("failed to dial ssh, ip: %s, error: %v", err)
+				log.Errorf("failed to dial ssh, ip: %s, error: %v", d.IP, err)
 				return
 			}
 			defer client.Close()
