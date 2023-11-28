@@ -74,7 +74,7 @@ func runGetConfig(device *config.Device, session *netconf.Session) error {
 		return fmt.Errorf("failed to get %s config, ip: %s, error: %v", opts.source, device.IP, err)
 	}
 
-	replyString := utils.FormatXML(reply.DataString())
+	replyString := utils.FormatXML(reply.String())
 	if opts.persist {
 		var name string
 		if device.Suffix != "" {
