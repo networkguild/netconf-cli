@@ -1,0 +1,5 @@
+Host labra
+  HostName 10.10.10.10
+
+Host 172.30.*
+  ProxyCommand ssh -W %h:%p netops-operator-2@labra

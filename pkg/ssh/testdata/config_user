@@ -1,0 +1,7 @@
+Host labra
+  HostName 10.10.10.10
+  IdentityFile testdata/id_ed25519
+  User netops-operator
+
+Host 172.30.*
+  ProxyCommand ssh labra -W %h:%p

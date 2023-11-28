@@ -80,7 +80,7 @@ func DialSSH(device *config.Device, keepalive bool) (*Client, error) {
 }
 
 func parseConnection(device *config.Device) (*ssh.Client, *ssh.ClientConfig, error) {
-	hosts, err := readUserSSHConfig()
+	hosts, err := readUserSSHConfig("")
 	if err != nil {
 		log.Warnf("Failed to find ssh config file, using input configs")
 		return nil, &ssh.ClientConfig{
@@ -158,8 +158,11 @@ func parseConnection(device *config.Device) (*ssh.Client, *ssh.ClientConfig, err
 	return tunnelSSHClient, deviceSSHConfig, nil
 }
 
-func readUserSSHConfig() ([]*sshconfig.SSHHost, error) {
-	path := filepath.Join(os.Getenv("HOME"), ".ssh", "config")
+func readUserSSHConfig(path string) ([]*sshconfig.SSHHost, error) {
+	if path == "" {
+		path = filepath.Join(os.Getenv("HOME"), ".ssh", "config")
+	}
+
 	hosts, err := sshconfig.Parse(path)
 	if err != nil {
 		fallbackConfig := "/etc/ssh/ssh_config"
@@ -175,22 +178,36 @@ type jumpHostConfig struct {
 	sshCfg   *ssh.ClientConfig
 }
 
+const defaultSSHIdentityFile = "~/.ssh/id_rsa"
+
 func getJumpHostConfigs(proxyCommand []string, hosts []*sshconfig.SSHHost) (*jumpHostConfig, error) {
-	var name string
+	var name, user string
 	idx := slices.Index(proxyCommand, "-W")
-	if length := len(proxyCommand); idx == length-1 {
+	if length := len(proxyCommand); idx == 1 {
 		name = proxyCommand[idx-1]
 	} else {
 		name = proxyCommand[length-1]
 	}
 
+	nameWithUser := strings.Split(name, "@")
+	if len(nameWithUser) == 2 {
+		user, name = nameWithUser[0], nameWithUser[1]
+	}
+
 	for _, host := range hosts {
 		if slices.Contains(host.Host, name) {
+			identityFile := host.IdentityFile
 			if host.IdentityFile == "" {
-				return nil, fmt.Errorf("identity file is required for jump host")
+				identityDefault := os.Getenv("SSH_DEFAULT_IDENTITY_FILE")
+				if identityDefault != "" {
+					identityFile = identityDefault
+				} else {
+					identityFile = defaultSSHIdentityFile
+				}
+				log.Warnf("no identity file found for host: %s, using default: %s", host.Host[0], identityFile)
 			}
 
-			signer, err := parseSSHSigner(host.IdentityFile)
+			signer, err := parseSSHSigner(identityFile)
 			if err != nil {
 				return nil, err
 			}
@@ -202,11 +219,18 @@ func getJumpHostConfigs(proxyCommand []string, hosts []*sshconfig.SSHHost) (*jum
 				port = host.Port
 			}
 
+			if user == "" {
+				user = host.User
+			}
+
+			if host.HostName == "" {
+				return nil, fmt.Errorf("hostname is required for jump host")
+			}
 			return &jumpHostConfig{
 				hostname: host.HostName,
 				port:     port,
 				sshCfg: &ssh.ClientConfig{
-					User:            host.User,
+					User:            user,
 					Auth:            []ssh.AuthMethod{ssh.PublicKeys(signer)},
 					HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 				},
