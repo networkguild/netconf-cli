@@ -105,7 +105,6 @@ func runGet(device *config.Device, session *netconf.Session) error {
 		}
 	} else {
 		device.Log.Infof("Get reply:\n%s", replyString)
-
 	}
 	device.Log.Infof("Executed get filter request, took %.3f seconds", time.Since(start).Seconds())
 	return nil

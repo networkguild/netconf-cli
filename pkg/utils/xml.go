@@ -7,6 +7,12 @@ import (
 )
 
 func FormatXML(input string) string {
-	input = strings.Trim(input, "\n")
-	return xmlfmt.FormatXML(input, "", "  ")
+	input = strings.TrimFunc(input, func(r rune) bool {
+		if r == '\n' || r == ' ' || r == '\t' {
+			return true
+		}
+		return false
+	})
+
+	return strings.Trim(xmlfmt.FormatXML(input, "", "  "), "\n")
 }

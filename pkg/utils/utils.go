@@ -65,14 +65,18 @@ func ReadFilesFromUser(path string) ([][]byte, error) {
 					if err != nil {
 						return nil, err
 					}
-					files = append(files, file)
+					if len(file) != 0 {
+						files = append(files, file)
+					}
 				}
 			} else {
 				file, err := readFile(path)
 				if err != nil {
 					return nil, err
 				}
-				files = append(files, file)
+				if len(file) != 0 {
+					files = append(files, file)
+				}
 			}
 			return files, nil
 		} else {
