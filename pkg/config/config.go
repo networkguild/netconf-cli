@@ -31,15 +31,17 @@ func ParseConfig(ctx context.Context) (*Config, error) {
 		port     = viper.GetInt("port")
 	)
 
-	if ip := viper.GetString("host"); ip != "" {
-		devices = append(devices, Device{
-			IP:       ip,
-			Username: username,
-			Password: password,
-			Port:     port,
-			Ctx:      ctx,
-			Log:      log.WithPrefix(ip),
-		})
+	if ips := viper.GetStringSlice("host"); len(ips) > 0 {
+		for _, ip := range ips {
+			devices = append(devices, Device{
+				IP:       ip,
+				Username: username,
+				Password: password,
+				Port:     port,
+				Ctx:      ctx,
+				Log:      log.WithPrefix(ip),
+			})
+		}
 	} else {
 		hosts, err := utils.ReadInventoryFromUser(viper.GetString("inventory"))
 		if err != nil {

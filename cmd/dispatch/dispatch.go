@@ -69,6 +69,7 @@ func runDispatch(device *config.Device, session *netconf.Session) error {
 	start := time.Now()
 	for _, data := range files {
 		if opts.useLock {
+			device.Log.Debugf("Locking %s datastore", datastore)
 			if err := session.Lock(ctx, datastore); err != nil {
 				return err
 			}
@@ -76,9 +77,16 @@ func runDispatch(device *config.Device, session *netconf.Session) error {
 			if reply, err := session.Dispatch(ctx, data); err != nil {
 				return err
 			} else {
-				device.Log.Debugf("Dispatch reply:\n%s", reply.Body)
+				replyString := utils.FormatXML(reply.String())
+				device.Log.Debugf("Dispatch reply:%s", replyString)
 			}
 
+			device.Log.Debug("Committing changes")
+			if err := session.Commit(ctx); err != nil {
+				return err
+			}
+
+			device.Log.Debugf("Unlocking %s datastore", datastore)
 			if err := session.Unlock(ctx, datastore); err != nil {
 				return err
 			}
@@ -86,7 +94,8 @@ func runDispatch(device *config.Device, session *netconf.Session) error {
 			if reply, err := session.Dispatch(ctx, data); err != nil {
 				return err
 			} else {
-				device.Log.Debugf("Dispatch reply:\n%s", reply.Body)
+				replyString := utils.FormatXML(reply.String())
+				device.Log.Debugf("Dispatch reply:\n%s", replyString)
 			}
 		}
 	}

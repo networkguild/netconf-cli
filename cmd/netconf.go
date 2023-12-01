@@ -148,7 +148,7 @@ func init() {
 	persistentFlags.BoolVar(&opts.caller, "caller", false, "Enables logging to show caller func")
 	persistentFlags.StringVar(&opts.logfile, "logfile", "", "Enables logging to specific file")
 	persistentFlags.StringP("inventory", "i", "", "Inventory file containing IP's")
-	persistentFlags.String("host", "", "IP or hostname of device to connect")
+	persistentFlags.StringSlice("host", []string{}, "IP or IP's of devices to connect")
 	rootCmd.MarkFlagsMutuallyExclusive("inventory", "host")
 	if err := viper.BindPFlags(persistentFlags); err != nil {
 		log.Fatalf("Failed to bind cobra persistentFlags to viper, error: %v", err)

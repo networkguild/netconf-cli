@@ -46,7 +46,7 @@ Flags:
       --caller             Enables logging to show caller func
       --debug              Enables debug level logging, logs raw replies
   -h, --help               help for netconf
-      --host string        IP or hostname of device to connect
+      --host string        IP or IP's of devices to connect
   -i, --inventory string   Inventory file containing IP's
       --logfile string     Enables logging to specific file, disables stdout logging
   -p, --password string    SSH password or env NETCONF_PASSWORD (default "admin")
