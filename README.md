@@ -12,6 +12,11 @@ netconf-go is cli tool to execute netconf operations to network devices.
 - Copy binary to /usr/local/bin/netconf (or any other location in $PATH)
 - Enjoy
 
+#### Note for apple users
+
+If binary doesn't run, or shell kills it instantly, you might need to allow it. From terminal `sudo xattr -d com.apple.quarantine /path/to/binary` 
+or from settings under `Privacy & Security`
+
 ## Usage:
 
 Use provided help pages for more information about subcommands

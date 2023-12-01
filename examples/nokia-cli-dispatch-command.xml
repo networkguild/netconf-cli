@@ -1,0 +1,7 @@
+<action xmlns="urn:ietf:params:xml:ns:yang:1">
+    <global-operations xmlns="urn:nokia.com:sros:ns:yang:sr:oper-global">
+        <md-cli-raw-command>
+            <md-cli-input-line>use any cli command here, e.g. file list</md-cli-input-line>
+        </md-cli-raw-command>
+    </global-operations>
+</action>
