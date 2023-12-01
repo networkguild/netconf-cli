@@ -80,6 +80,7 @@ func runEditConfig(device *config.Device, session *netconf.Session) error {
 	}
 	start := time.Now()
 	for _, data := range files {
+		device.Log.Debugf("Locking %s datastore", datastore)
 		if err := session.Lock(ctx, datastore); err != nil {
 			return err
 		}
@@ -96,15 +97,18 @@ func runEditConfig(device *config.Device, session *netconf.Session) error {
 		}
 
 		if validate {
+			device.Log.Debugf("Validating %s datastore", datastore)
 			if err := session.Validate(ctx, datastore); err != nil {
 				return err
 			}
 		}
 
+		device.Log.Debug("Committing changes")
 		if err := session.Commit(ctx); err != nil {
 			return err
 		}
 
+		device.Log.Debugf("Unlocking %s datastore", datastore)
 		if err := session.Unlock(ctx, datastore); err != nil {
 			return err
 		}

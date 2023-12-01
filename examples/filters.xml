@@ -1,2 +1,9 @@
-<configure xmlns="urn:nokia.com:sros:ns:yang:sr:conf"><system><security/></system></configure>
-<state xmlns="urn:nokia.com:sros:ns:yang:sr:state"><system><security/></system></state>
+<state xmlns="urn:nokia.com:sros:ns:yang:sr:state">
+    <port><ethernet><lldp><dest-mac>
+        <remote-system/>
+    </dest-mac></lldp></ethernet></port>
+</state>
+<configure xmlns="urn:nokia.com:sros:ns:yang:sr:conf">
+  <service><vprn/></service>
+</configure>
+

@@ -34,10 +34,16 @@ netconf get --host 192.168.1.1 --filters filters.xml --debug
 
 Example filters file content:
 # filters.xml 
-<devm xmlns="urn:huawei:yang:huawei-devm"/>
-<ifm xmlns="urn:huawei:yang:huawei-ifm"/>
+<state xmlns="urn:nokia.com:sros:ns:yang:sr:state">
+        <port><ethernet><lldp><dest-mac>
+            <remote-system/>
+        </dest-mac></lldp></ethernet></port>
+</state>
+<configure xmlns="urn:nokia.com:sros:ns:yang:sr:conf">
+        <service><vprn/></service>
+</configure>
 
-One subtree/filter per line, no maximum amount of filters. All filters are fetched same time.`,
+All filters are fetched same time.`,
 		Args: cobra.ExactArgs(0),
 		Run: func(cmd *cobra.Command, args []string) {
 			cfg, err := config.ParseConfig(context.Background())
