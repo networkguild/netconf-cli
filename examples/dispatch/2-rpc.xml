@@ -1,0 +1,11 @@
+<edit-config>
+    <target>
+        <configuration-region>bof</configuration-region>
+        <candidate/>
+    </target>
+    <config>
+        <bof xmlns="urn:nokia.com:sros:ns:yang:sr:bof-conf">
+            <console/>
+        </bof>
+    </config>
+</edit-config>

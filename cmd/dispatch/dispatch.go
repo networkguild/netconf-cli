@@ -25,6 +25,7 @@ func NewDispatchCommand() *cobra.Command {
 		Use:   "dispatch",
 		Short: "Execute rpc",
 		Long: `Execute user-defined rpc with optional options
+Use --debug flag, to log all dispatch replies (Recommended)
 
 # dispatch
 netconf dispatch --host 192.168.1.1 --file dispatch.xml`,
@@ -47,7 +48,7 @@ netconf dispatch --host 192.168.1.1 --file dispatch.xml`,
 		},
 	}
 	flags := dispatchCmd.Flags()
-	flags.StringVarP(&opts.file, "file", "f", "", "stdin, file or directory containing xml files, or stdin")
+	flags.StringVarP(&opts.file, "file", "f", "", "stdin, file or directory containing xml files")
 	flags.BoolVarP(&opts.useLock, "lock", "l", false, "run with datastore lock")
 
 	return dispatchCmd
@@ -78,7 +79,7 @@ func runDispatch(device *config.Device, session *netconf.Session) error {
 				return err
 			} else {
 				replyString := utils.FormatXML(reply.String())
-				device.Log.Debugf("Dispatch reply:%s", replyString)
+				device.Log.Debugf("Dispatch reply:\n%s", replyString)
 			}
 
 			device.Log.Debug("Committing changes")

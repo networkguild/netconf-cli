@@ -149,7 +149,8 @@ func runSubscriptions(devices []config.Device) {
 				if err != nil {
 					log.Errorf("Failed to get available streams: %v", err)
 				}
-				d.Log.Infof("Available streams:\n%s", get)
+				xmlString := utils.FormatXML(get.String())
+				d.Log.Infof("Available streams:\n%s", xmlString)
 				d.Log.Infof("Fetched available notifications streams, took %.3f seconds", time.Since(start).Seconds())
 			} else {
 				if opts.duration != 0 {

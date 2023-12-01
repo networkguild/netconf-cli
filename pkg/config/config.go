@@ -52,11 +52,16 @@ func ParseConfig(ctx context.Context) (*Config, error) {
 			if host.IP == "" {
 				continue
 			}
+
+			p := port
+			if host.Port != 0 {
+				p = host.Port
+			}
 			devices = append(devices, Device{
 				IP:       host.IP,
 				Username: username,
 				Password: password,
-				Port:     port,
+				Port:     p,
 				Suffix:   host.Suffix,
 				Ctx:      ctx,
 				Log:      log.WithPrefix(host.IP),

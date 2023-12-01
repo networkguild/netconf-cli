@@ -46,15 +46,17 @@ RPC's are saved in raw format, including chunked markers.
 				}
 
 				if opts.trace {
-					dir, err := homedir.Dir()
-					if err != nil {
-						log.Warnf("Failed to get home directory, cannot set NETCONF_DEBUG_CAPTURE_DIR, error: %v", err)
-					} else {
-						dir = dir + "/.netconf"
-						if err := os.Setenv("NETCONF_DEBUG_CAPTURE_DIR", dir); err != nil {
-							log.Warnf("Failed to set NETCONF_DEBUG_CAPTURE_DIR, error: %v", err)
+					if os.Getenv("NETCONF_DEBUG_CAPTURE_DIR") == "" {
+						dir, err := homedir.Dir()
+						if err != nil {
+							log.Warnf("Failed to get home directory, cannot set NETCONF_DEBUG_CAPTURE_DIR, error: %v", err)
 						} else {
-							log.Infof("NETCONF_DEBUG_CAPTURE_DIR set to %s", dir)
+							dir = dir + "/.netconf"
+							if err := os.Setenv("NETCONF_DEBUG_CAPTURE_DIR", dir); err != nil {
+								log.Warnf("Failed to set NETCONF_DEBUG_CAPTURE_DIR, error: %v", err)
+							} else {
+								log.Infof("NETCONF_DEBUG_CAPTURE_DIR set to %s", dir)
+							}
 						}
 					}
 				}
