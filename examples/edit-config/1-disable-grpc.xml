@@ -1,0 +1,23 @@
+<config>
+    <configure xmlns="urn:nokia.com:sros:ns:yang:sr:conf">
+        <system>
+            <grpc>
+                <admin-state>disable</admin-state>
+                <tls-server-profile operation="remove"/>
+            </grpc>
+            <security>
+                <tls>
+                    <cert-profile operation="remove">
+                        <cert-profile-name>grpc-tls-certs</cert-profile-name>
+                    </cert-profile>
+                    <server-cipher-list operation="remove">
+                        <server-cipher-list-name>edn-grpc-ciphers</server-cipher-list-name>
+                    </server-cipher-list>
+                    <server-tls-profile operation="remove">
+                        <server-profile-name>edn-grpc-tls</server-profile-name>
+                    </server-tls-profile>
+                </tls>
+            </security>
+        </system>
+    </configure>
+</config>

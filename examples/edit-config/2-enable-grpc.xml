@@ -1,0 +1,17 @@
+<config>
+    <configure xmlns="urn:nokia.com:sros:ns:yang:sr:conf">
+        <system>
+            <security>
+                <aaa>
+                    <user-template>
+                        <user-template-name>tacplus-default</user-template-name>
+                        <profile>IP-NG-Read-Write</profile>
+                        <access>
+                            <grpc>true</grpc>
+                        </access>
+                    </user-template>
+                </aaa>
+            </security>
+        </system>
+    </configure>
+</config>

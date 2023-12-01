@@ -72,6 +72,19 @@ Currently, filter/subtree per line is supported. There can be any amount of line
 
 See [example](examples/filters.xml)
 
+### Edit-config & dispatch xml
+Flag: `--file, -f`
+
+Used with `dispatch`, `edit-config` commands. Not available with others.
+
+Flag value could be file or directory containing multiple files.
+Files are executed in alphabetical order.
+
+Example directory structure:
+
+See [dispatch example](examples/dispatch)
+See [edit-config example](examples/edit-config)
+
 ### Commands
 All commands below assumes that you have `NETCONF_PASSWORD` and `NETCONF_USERNAME` environment variables set, or else using defaults.
 Global flags are available for all commands, see above or `netconf --help`.
