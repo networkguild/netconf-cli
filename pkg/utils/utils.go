@@ -7,12 +7,14 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 )
 
 type Host struct {
 	IP     string
+	Port   int
 	Suffix string
 }
 
@@ -108,6 +110,19 @@ func createHost(text string) *Host {
 	var suffix string
 	if len(hostWithFileName) == 2 {
 		suffix = hostWithFileName[1]
+	}
+
+	hostAndPort := strings.Split(hostWithFileName[0], ":")
+	if len(hostAndPort) == 2 {
+		port, err := strconv.Atoi(hostAndPort[1])
+		if err != nil {
+			port = 0
+		}
+		return &Host{
+			IP:     hostAndPort[0],
+			Port:   port,
+			Suffix: suffix,
+		}
 	}
 	return &Host{
 		IP:     hostWithFileName[0],

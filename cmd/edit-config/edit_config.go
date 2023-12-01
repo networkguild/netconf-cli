@@ -92,7 +92,6 @@ func runEditConfig(device *config.Device, session *netconf.Session) error {
 			netconf.WithDefaultMergeStrategy(netconf.MergeStrategy(opts.defaltOp)),
 			netconf.WithTestStrategy(netconf.TestStrategy(opts.testOp)),
 		); err != nil {
-			device.Log.Debugf("Locking %s datastore", datastore)
 			device.Log.Errorf("Failed to edit %s config: %v", datastore, err)
 			return err
 		}
