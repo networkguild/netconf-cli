@@ -7,9 +7,7 @@ on:
 
 jobs:
   release:
-    runs-on:
-      - self-hosted
-      - kaas
+    runs-on: elisa-normal
     timeout-minutes: 10
     permissions:
       contents: write
@@ -43,7 +41,7 @@ jobs:
           send-to-mattermost
 
   publish:
-    runs-on: self-hosted
+    runs-on: elisa-normal
     timeout-minutes: 5
     needs: release
     steps:

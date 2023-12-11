@@ -14,5 +14,5 @@ func FormatXML(input string) string {
 		return false
 	})
 
-	return strings.Trim(xmlfmt.FormatXML(input, "", "  "), "\n")
+	return strings.TrimPrefix(xmlfmt.FormatXML(input, "", "  "), "\n")
 }

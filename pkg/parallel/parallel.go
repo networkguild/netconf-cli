@@ -17,29 +17,34 @@ import (
 
 var errorStore *haxmap.Map[string, error]
 
-func RunParallel(devices []config.Device, f func(device *config.Device, session *netconf.Session) error) error {
-	errorStore = haxmap.New[string, error](uintptr(len(devices)))
+func RunParallel(config *config.Config, f func(device *config.Device, session *netconf.Session) error) error {
+	errorStore = haxmap.New[string, error](uintptr(len(config.Devices)))
+	devicesCount := len(config.Devices)
+
 	var wg errgroup.Group
 	wg.SetLimit(runtime.GOMAXPROCS(0))
 
-	for _, device := range devices {
+	client := ssh.NewClient(devicesCount, config.Multiplexing, false)
+	defer client.Close()
+
+	for _, device := range config.Devices {
 		d := device
 		wg.Go(func() error {
-			client, err := ssh.DialSSH(&d, false)
+			sshClient, err := client.DialSSH(&d)
 			if err != nil {
 				errorStore.Set(d.IP, err)
 				return err
 			}
-			defer client.Close()
+			defer client.CloseDeviceConn(d.IP)
 
-			transport, err := ncssh.NewTransport(client.DeviceSSHClient)
+			transport, err := ncssh.NewTransport(sshClient)
 			if err != nil {
 				errorStore.Set(d.IP, err)
 				return err
 			}
 			defer transport.Close()
 
-			session, err := netconf.Open(transport)
+			session, err := netconf.Open(transport, netconf.WithLogger(d.Log))
 			if err != nil {
 				errorStore.Set(d.IP, err)
 				return fmt.Errorf("failed to exchange hello messages, error: %v", err)

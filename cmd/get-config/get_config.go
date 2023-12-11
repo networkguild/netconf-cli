@@ -46,7 +46,7 @@ netconf get-config --host 192.168.1.1 --password pass --username user`,
 				}
 			}
 
-			if err := parallel.RunParallel(cfg.Devices, runGetConfig); err != nil {
+			if err := parallel.RunParallel(cfg, runGetConfig); err != nil {
 				log.Fatalf("Failed to execute get-config")
 			}
 		},

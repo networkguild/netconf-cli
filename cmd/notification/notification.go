@@ -2,7 +2,6 @@ package notification
 
 import (
 	"context"
-	"encoding/xml"
 	"fmt"
 	"os"
 	"os/signal"
@@ -67,7 +66,7 @@ netconf notification --host 192.168.1.1 --stream NETCONF --duration 12m30s`,
 				log.Fatalf("Failed to init config, error: %v", err)
 			}
 
-			runSubscriptions(cfg.Devices)
+			runSubscriptions(cfg)
 		},
 	}
 	flags := notificationCmd.Flags()
@@ -81,23 +80,19 @@ netconf notification --host 192.168.1.1 --stream NETCONF --duration 12m30s`,
 
 const subscriptionGet = `<netconf xmlns="urn:ietf:params:xml:ns:netmod:notification"><streams/></netconf>`
 
-func runSubscriptions(devices []config.Device) {
+func runSubscriptions(config *config.Config) {
+	devicesCount := len(config.Devices)
 	var wg sync.WaitGroup
+	wg.Add(devicesCount)
 
-	wg.Add(len(devices))
-	for _, device := range devices {
+	client := ssh.NewClient(devicesCount, config.Multiplexing, true)
+	defer client.Close()
+
+	for _, device := range config.Devices {
 		d := device
-		handler := func(notification netconf.Notification) {
-			var xmlString string
-			notif, err := xml.Marshal(&notification)
-			if err != nil {
-				xmlString = notification.String()
-			} else {
-				xmlString = string(notif)
-			}
-			xmlString = utils.FormatXML(xmlString)
-			d.Log.Infof("Received notification, timestamp: %s", notification.EventTime)
-
+		handler := func(n netconf.Notification) {
+			d.Log.Infof("Received notification, timestamp: %s", n.EventTime)
+			xmlString := utils.FormatXML(n.String())
 			if opts.persist {
 				var fileName string
 				if d.Suffix != "" {
@@ -114,28 +109,28 @@ func runSubscriptions(devices []config.Device) {
 
 				file.WriteString(xmlString)
 			} else {
-				d.Log.Infof("Notification:%s", xmlString)
+				d.Log.Infof("Notification:\n%s", xmlString)
 			}
 		}
 
 		go func() {
 			defer wg.Done()
 			start := time.Now()
-			client, err := ssh.DialSSH(&d, true)
+			sshClient, err := client.DialSSH(&d)
 			if err != nil {
 				log.Errorf("failed to dial ssh, ip: %s, error: %v", d.IP, err)
 				return
 			}
-			defer client.Close()
+			defer client.CloseDeviceConn(d.IP)
 
-			transport, err := ncssh.NewTransport(client.DeviceSSHClient)
+			transport, err := ncssh.NewTransport(sshClient)
 			if err != nil {
 				log.Errorf("failed to create new transport error: %v", err)
 				return
 			}
 			defer transport.Close()
 
-			session, err := netconf.Open(transport, netconf.WithNotificationHandler(handler))
+			session, err := netconf.Open(transport, netconf.WithNotificationHandler(handler), netconf.WithLogger(d.Log))
 			if err != nil {
 				log.Errorf("failed to exchange hello messages, ip: %s, error: %v", d.IP, err)
 				return
