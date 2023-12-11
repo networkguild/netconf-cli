@@ -16,6 +16,7 @@ import (
 	"github.com/mikkeloscar/sshconfig"
 	"github.devcloud.elisa.fi/netops/netconf-go/pkg/config"
 	"golang.org/x/crypto/ssh"
+	"golang.org/x/crypto/ssh/agent"
 )
 
 type Client struct {
@@ -43,6 +44,10 @@ func NewClient(devicesCount int, multiplexing, keepalive bool) *Client {
 		proxies:      haxmap.New[string, *ssh.Client](),
 		multiplexing: multiplexing,
 		keepalive:    keepalive,
+	}
+	found := client.getSignersFromAgent()
+	if found {
+		log.Debug("Found ssh-agent, using it for authentication")
 	}
 
 	var err error
@@ -211,4 +216,23 @@ func readUserSSHConfig(path string) ([]*sshconfig.SSHHost, error) {
 		return sshconfig.Parse(fallbackConfig)
 	}
 	return hosts, nil
+}
+
+func (c *Client) getSignersFromAgent() bool {
+	if sockAddress := os.Getenv("SSH_AUTH_SOCK"); sockAddress != "" {
+		sock, err := net.Dial("unix", os.Getenv("SSH_AUTH_SOCK"))
+		if err != nil {
+			log.Errorf("failed to connect to ssh-agent: %v", err)
+			return false
+		}
+		c.agent = sock
+
+		c.signers, err = agent.NewClient(sock).Signers()
+		if err != nil {
+			log.Errorf("failed to list signers from ssh-agent: %v", err)
+			return false
+		}
+		return true
+	}
+	return false
 }
