@@ -12,9 +12,7 @@ jobs:
     uses: EDN/gha-templates/.github/workflows/staticcheck.yaml@master
     secrets: inherit
   go:
-    runs-on:
-      - self-hosted
-      - kaas
+    runs-on: elisa-normal
     timeout-minutes: 5
     steps:
       - name: Checkout
@@ -54,9 +52,7 @@ jobs:
     permissions:
       pull-requests: write
       contents: write
-    runs-on:
-      - self-hosted
-      - kaas
+    runs-on: elisa-normal
     timeout-minutes: 5
     steps:
       - name: Automerge dependabot PR
