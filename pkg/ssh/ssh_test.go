@@ -11,6 +11,8 @@ import (
 
 const testHostIP = "172.30.15.1"
 
+var client = NewClient(1, false, false)
+
 func TestSSHConfigParsing(t *testing.T) {
 	tests := []struct {
 		name             string
@@ -51,12 +53,13 @@ func TestSSHConfigParsing(t *testing.T) {
 					assert.NotEmpty(t, host.ProxyCommand)
 
 					proxyCommand := strings.Split(host.ProxyCommand, " ")
-					configs, err := getJumpHostConfigs(proxyCommand[1:], hosts)
+					proxy := parseJumpHost(proxyCommand[1:], hosts)
+					configs, err := client.getJumpHostConfigs(proxy)
 					if err != nil {
 						t.Fatal(err)
 					}
 
-					assert.Equal(t, "10.10.10.10", configs.hostname)
+					assert.Equal(t, "10.10.10.10", configs.address)
 					assert.Equal(t, test.expectedJumpUser, configs.sshCfg.User)
 				}
 			}
