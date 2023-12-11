@@ -46,7 +46,7 @@ netconf edit-config --host 192.168.1.1 --file rpc <- directory used here (probab
 			}
 			files = f
 
-			if err := parallel.RunParallel(cfg.Devices, runEditConfig); err != nil {
+			if err := parallel.RunParallel(cfg, runEditConfig); err != nil {
 				log.Fatalf("Failed to execute edit-config")
 			}
 		},

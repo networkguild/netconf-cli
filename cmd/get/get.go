@@ -58,7 +58,7 @@ All filters are fetched same time.`,
 				}
 			}
 
-			if err := parallel.RunParallel(cfg.Devices, runGet); err != nil {
+			if err := parallel.RunParallel(cfg, runGet); err != nil {
 				log.Fatalf("Failed to execute get")
 			}
 		},

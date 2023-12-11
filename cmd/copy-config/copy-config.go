@@ -37,7 +37,7 @@ netconf copy-config --host 192.168.1.1 --file rpc <- directory used here (probab
 				log.Fatalf("Failed to init config, error: %v", err)
 			}
 
-			if err := parallel.RunParallel(cfg.Devices, runCopyConfig); err != nil {
+			if err := parallel.RunParallel(cfg, runCopyConfig); err != nil {
 				log.Fatalf("Failed to execute copy-config")
 			}
 		},

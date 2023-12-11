@@ -10,7 +10,8 @@ import (
 )
 
 type Config struct {
-	Devices []Device
+	Devices      []Device
+	Multiplexing bool
 }
 
 type Device struct {
@@ -70,6 +71,7 @@ func ParseConfig(ctx context.Context) (*Config, error) {
 	}
 
 	return &Config{
-		Devices: devices,
+		Devices:      devices,
+		Multiplexing: !viper.GetBool("no-multiplexing"),
 	}, nil
 }

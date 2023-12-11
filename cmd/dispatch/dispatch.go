@@ -42,7 +42,7 @@ netconf dispatch --host 192.168.1.1 --file dispatch.xml`,
 			}
 			files = f
 
-			if err := parallel.RunParallel(cfg.Devices, runDispatch); err != nil {
+			if err := parallel.RunParallel(cfg, runDispatch); err != nil {
 				log.Fatalf("Failed to execute dispatch")
 			}
 		},

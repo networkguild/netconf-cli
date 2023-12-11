@@ -21,6 +21,8 @@ var opts struct {
 	trace   bool
 	caller  bool
 	logfile string
+
+	noMultiplexing bool
 }
 
 var (
@@ -73,6 +75,10 @@ RPC's are saved in raw format, including chunked markers.
 				if opts.debug {
 					log.SetLevel(log.DebugLevel)
 					log.Debug("Debug logging enabled")
+				}
+
+				if opts.noMultiplexing {
+					log.Warn("SSH multiplexing disabled")
 				}
 			}
 		},
@@ -148,6 +154,7 @@ func init() {
 	persistentFlags.BoolVar(&opts.debug, "debug", false, "Enables debug level logging")
 	persistentFlags.BoolVar(&opts.trace, "trace", false, "Enables RPC tracing, saves all incoming and outgoing RPC's to file. Default dir $HOME/.netconf")
 	persistentFlags.BoolVar(&opts.caller, "caller", false, "Enables logging to show caller func")
+	persistentFlags.BoolVar(&opts.noMultiplexing, "no-multiplexing", false, "Disables SSH multiplexing over jump connection")
 	persistentFlags.StringVar(&opts.logfile, "logfile", "", "Enables logging to specific file")
 	persistentFlags.StringP("inventory", "i", "", "Inventory file containing IP's")
 	persistentFlags.StringSlice("host", []string{}, "IP or IP's of devices to connect")
