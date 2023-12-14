@@ -5,14 +5,26 @@ updates:
     schedule:
       interval: "weekly"
       day: "sunday"
-    labels: ["dependencies", "github_actions", "patch", "skip-release"]
-    reviewers:
-      - "EDN/dependabot-reviewers"
+    groups:
+      actions:
+        patterns:
+          - "*"
+    labels: ["dependencies", "github_actions"]
   - package-ecosystem: "gomod"
     directory: "/"
     schedule:
       interval: "weekly"
       day: "sunday"
-    labels: ["dependencies", "go", "patch", "skip-release"]
-    reviewers:
-      - "EDN/dependabot-reviewers"
+    groups:
+      minor-dependencies:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+      major-dependencies:
+        patterns:
+          - "*"
+        update-types:
+          - "major"
+    labels: ["dependencies", "go"]

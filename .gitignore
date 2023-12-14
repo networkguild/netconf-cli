@@ -1,9 +1,7 @@
 .idea
 *iml
-failsafe-reports
 *.log*
 .fleet
-test-results-native/
 bin/*
 
 vendor/

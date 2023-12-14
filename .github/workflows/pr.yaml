@@ -8,11 +8,8 @@ on:
       - reopened
 
 jobs:
-  staticcheck:
-    uses: EDN/gha-templates/.github/workflows/staticcheck.yaml@master
-    secrets: inherit
   go:
-    runs-on: elisa-normal
+    runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - name: Checkout
@@ -38,26 +35,17 @@ jobs:
         run: |
           make build-all
 
-      - name: Notify failure
-        if: failure()
-        env:
-          MATTERMOST_WEBHOOK_URL: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
-          MATTERMOST_TEXT: "${{ github.repository }} build failed. Please check [here](${{ github.event.pull_request.html_url }}/checks)."
-        run: |
-          send-to-mattermost
-
   dependabot-automerge:
     if: ${{ github.actor == 'dependabot[bot]' && github.event_name == 'pull_request' }}
     needs: go
     permissions:
       pull-requests: write
       contents: write
-    runs-on: elisa-normal
+    runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - name: Automerge dependabot PR
-        uses: elisa-actions/github-action-merge-dependabot@v3
+        uses: fastify/github-action-merge-dependabot@v3
         with:
-          github-token: ${{ secrets.ROBOT_PAT }}
           target: minor
           skip-commit-verification: true
