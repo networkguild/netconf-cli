@@ -1,10 +1,9 @@
-# netconf-go
+# netconf-cli
 
-[![PR](https://github.devcloud.elisa.fi/NetOps/netconf-go/workflows/Pull%20Request/badge.svg)](https://github.devcloud.elisa.fi/NetOps/netconf-go/actions/workflows/pr.yaml)
-[![Master](https://github.devcloud.elisa.fi/NetOps/netconf-go/workflows/Master/badge.svg)](https://github.devcloud.elisa.fi/NetOps/netconf-go/actions/workflows/master.yaml)
-[![Release](https://github.devcloud.elisa.fi/NetOps/netconf-go/workflows/Release/badge.svg)](https://github.devcloud.elisa.fi/NetOps/netconf-go/actions/workflows/release.yaml)
+[![Main](https://img.shields.io/github/actions/workflow/status/networkguild/netconf-cli/main.yaml?style=social)](https://github.com/networkguild/netconf-cli/actions/workflows/main.yaml)
+[![Releases](https://img.shields.io/github/release/networkguild/netconf-cli/all.svg?style=social)](https://github.com/networkguild/netconf-cli/releases)
 
-netconf-go is cli tool to execute netconf operations to network devices.
+netconf-cli is cli tool to execute netconf operations to network devices.
 
 ## Installation
 
