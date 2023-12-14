@@ -6,14 +6,14 @@ import (
 
 	"github.com/charmbracelet/log"
 	"github.com/mitchellh/go-homedir"
+	copyconfig "github.com/networkguild/netconf-cli/cmd/copy-config"
+	"github.com/networkguild/netconf-cli/cmd/dispatch"
+	editconfig "github.com/networkguild/netconf-cli/cmd/edit-config"
+	"github.com/networkguild/netconf-cli/cmd/get"
+	getconfig "github.com/networkguild/netconf-cli/cmd/get-config"
+	"github.com/networkguild/netconf-cli/cmd/notification"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	copyconfig "github.devcloud.elisa.fi/netops/netconf-go/cmd/copy-config"
-	"github.devcloud.elisa.fi/netops/netconf-go/cmd/dispatch"
-	editconfig "github.devcloud.elisa.fi/netops/netconf-go/cmd/edit-config"
-	"github.devcloud.elisa.fi/netops/netconf-go/cmd/get"
-	getconfig "github.devcloud.elisa.fi/netops/netconf-go/cmd/get-config"
-	"github.devcloud.elisa.fi/netops/netconf-go/cmd/notification"
 )
 
 var opts struct {

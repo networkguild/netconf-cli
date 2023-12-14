@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.devcloud.elisa.fi/netops/netconf-go/cmd"
+	"github.com/networkguild/netconf-cli/cmd"
 )
 
 func main() {

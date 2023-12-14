@@ -8,10 +8,10 @@ import (
 
 	"github.com/charmbracelet/log"
 	"github.com/networkguild/netconf"
+	"github.com/networkguild/netconf-cli/pkg/config"
+	"github.com/networkguild/netconf-cli/pkg/parallel"
+	"github.com/networkguild/netconf-cli/pkg/utils"
 	"github.com/spf13/cobra"
-	"github.devcloud.elisa.fi/netops/netconf-go/pkg/config"
-	"github.devcloud.elisa.fi/netops/netconf-go/pkg/parallel"
-	"github.devcloud.elisa.fi/netops/netconf-go/pkg/utils"
 )
 
 var opts struct {

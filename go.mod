@@ -1,4 +1,4 @@
-module github.devcloud.elisa.fi/netops/netconf-go
+module github.com/networkguild/netconf-cli
 
 go 1.21
 

@@ -9,9 +9,9 @@ import (
 	"github.com/alphadose/haxmap"
 	"github.com/charmbracelet/log"
 	"github.com/networkguild/netconf"
+	"github.com/networkguild/netconf-cli/pkg/config"
+	"github.com/networkguild/netconf-cli/pkg/ssh"
 	ncssh "github.com/networkguild/netconf/transport/ssh"
-	"github.devcloud.elisa.fi/netops/netconf-go/pkg/config"
-	"github.devcloud.elisa.fi/netops/netconf-go/pkg/ssh"
 	"golang.org/x/sync/errgroup"
 )
 

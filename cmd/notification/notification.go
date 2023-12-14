@@ -11,11 +11,11 @@ import (
 
 	"github.com/charmbracelet/log"
 	"github.com/networkguild/netconf"
+	"github.com/networkguild/netconf-cli/pkg/config"
+	"github.com/networkguild/netconf-cli/pkg/ssh"
+	"github.com/networkguild/netconf-cli/pkg/utils"
 	ncssh "github.com/networkguild/netconf/transport/ssh"
 	"github.com/spf13/cobra"
-	"github.devcloud.elisa.fi/netops/netconf-go/pkg/config"
-	"github.devcloud.elisa.fi/netops/netconf-go/pkg/ssh"
-	"github.devcloud.elisa.fi/netops/netconf-go/pkg/utils"
 )
 
 var opts struct {

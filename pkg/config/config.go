@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/charmbracelet/log"
+	"github.com/networkguild/netconf-cli/pkg/utils"
 	"github.com/spf13/viper"
-	"github.devcloud.elisa.fi/netops/netconf-go/pkg/utils"
 )
 
 type Config struct {

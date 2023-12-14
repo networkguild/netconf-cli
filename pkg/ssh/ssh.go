@@ -14,7 +14,7 @@ import (
 	"github.com/alphadose/haxmap"
 	"github.com/charmbracelet/log"
 	"github.com/mikkeloscar/sshconfig"
-	"github.devcloud.elisa.fi/netops/netconf-go/pkg/config"
+	"github.com/networkguild/netconf-cli/pkg/config"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/agent"
 )
