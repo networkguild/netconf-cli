@@ -3,16 +3,16 @@ module github.com/networkguild/netconf-cli
 go 1.21
 
 require (
-	github.com/alphadose/haxmap v1.3.0
+	github.com/alphadose/haxmap v1.3.1
 	github.com/charmbracelet/log v0.3.1
 	github.com/go-xmlfmt/xmlfmt v1.1.2
 	github.com/mikkeloscar/sshconfig v0.1.1
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/networkguild/netconf v1.0.4
 	github.com/spf13/cobra v1.8.0
-	github.com/spf13/viper v1.18.1
+	github.com/spf13/viper v1.18.2
 	github.com/stretchr/testify v1.8.4
-	golang.org/x/crypto v0.16.0
+	golang.org/x/crypto v0.17.0
 	golang.org/x/sync v0.5.0
 	golang.org/x/term v0.15.0
 )
