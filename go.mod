@@ -3,7 +3,7 @@ module github.com/networkguild/netconf-cli
 go 1.21
 
 require (
-	github.com/alphadose/haxmap v1.3.1
+	github.com/alphadose/haxmap v1.4.0
 	github.com/charmbracelet/log v0.4.0
 	github.com/go-xmlfmt/xmlfmt v1.1.2
 	github.com/mikkeloscar/sshconfig v0.1.1
@@ -12,7 +12,7 @@ require (
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/viper v1.18.2
 	github.com/stretchr/testify v1.9.0
-	golang.org/x/crypto v0.22.0
+	golang.org/x/crypto v0.23.0
 	golang.org/x/sync v0.7.0
 	golang.org/x/term v0.20.0
 )
@@ -45,7 +45,7 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/exp v0.0.0-20231206192017-f3f8817b8deb // indirect
 	golang.org/x/sys v0.20.0 // indirect
-	golang.org/x/text v0.14.0 // indirect
+	golang.org/x/text v0.15.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
